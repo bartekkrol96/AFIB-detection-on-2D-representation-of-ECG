@@ -1,3 +1,5 @@
+import os
+import tensorflow as tf
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,11 +11,11 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.callbacks import TensorBoard
 import time
+import datetime
 
-DATADIR = '/Volumes/Backup Plus/MGR_DATASET/SPECTOGRAM'
+DATADIR = '/media/bartek/Storage/DATASET/SPECTROGRAM'
 CATEGORIES = ['AFIB', 'nonAFIB']
 IMG_SIZE = 50
-
 
 training_data = []
 
@@ -63,11 +65,12 @@ X = pickle.load(open("X.pickle", "rb"))
 y = pickle.load(open("y.pickle", "rb"))
 
 X = X/255.0
+y = np.array(y)
 
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
         for conv_layer in conv_layers:
-            NAME = 'scalogram_AFDBBALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
+            NAME = 'scalogram_AFDB_FINAL_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
@@ -93,5 +96,10 @@ for dense_layer in dense_layers:
                           optimizer="adam",
                           metrics=['accuracy'])
 
-            model.fit(X, y, batch_size=32, validation_split=0.1, epochs=20, callbacks=[tensorboard])
+            # checkpoint_path = "training_1/cp.ckpt"
+            # checkpoint_dir = os.path.dirname(checkpoint_path)
+            # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                             save_weights_only=True,
+                                                             verbose=1)
 
+            model.fit(X, y, batch_size=32, validation_split=0.1, epochs=20, callbacks=[tensorboard])
