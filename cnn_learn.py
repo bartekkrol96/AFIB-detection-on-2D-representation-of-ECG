@@ -13,15 +13,15 @@ from tensorflow.keras.callbacks import TensorBoard
 import time
 import datetime
 
-DATADIR = '/media/bartek/Storage/DATASET/SPECTROGRAM'
+DATADIR = 'MGR_DATASET/ATRACTOR/'
 CATEGORIES = ['AFIB', 'nonAFIB']
 IMG_SIZE = 50
 
 training_data = []
 
 dense_layers = [2]#[0, 1, 2]
-layer_sizes = [32] #[32, 64, 128]
-conv_layers = [2]#[1, 2, 3]
+layer_sizes = [64] #[32, 64, 128]
+conv_layers = [3]#[1, 2, 3]
 
 
 def create_training_data():
@@ -70,7 +70,7 @@ y = np.array(y)
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
         for conv_layer in conv_layers:
-            NAME = 'scalogram_AFDB_FINAL_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
+            NAME = 'ATRACTOR_AFDB_FINAL_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
@@ -99,7 +99,7 @@ for dense_layer in dense_layers:
             # checkpoint_path = "training_1/cp.ckpt"
             # checkpoint_dir = os.path.dirname(checkpoint_path)
             # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-                                                             save_weights_only=True,
-                                                             verbose=1)
+            #                                                  save_weights_only=True,
+            #                                                  verbose=1)
 
             model.fit(X, y, batch_size=32, validation_split=0.1, epochs=20, callbacks=[tensorboard])
