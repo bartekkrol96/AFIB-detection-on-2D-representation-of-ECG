@@ -1,5 +1,4 @@
 import tensorflow as tf
-import wfdb
 import pandas as pd
 from scipy.signal import spectrogram, cwt, ricker, get_window
 import matplotlib as mpl
@@ -131,30 +130,59 @@ class TrainProbeGenerator:
             pass
 
 
-directory = os.fsencode('/Users/projekt/Desktop/files')
+directory = os.fsencode('/media/bartek/Storage/DATASET/mit-bih-atrial-fibrillation-database-1.0.0/files')
 for file in tqdm(os.listdir(directory)):
     filename = os.fsdecode(file.decode())
     if filename.endswith(".dat"):
         print(filename)
-        signal_path = '/Users/projekt/Desktop/files/'+filename[:-4]
+        signal_path = '/media/bartek/Storage/DATASET/mit-bih-atrial-fibrillation-database-1.0.0/files/'+filename[:-4]
         my_visu = TrainProbeGenerator(signal_path)
         all_segments = my_visu.list_of_segments
         for segment in tqdm(all_segments):
             ecg1 = segment['chunk']['ECG1']
             label = segment['rhythm']
-
+            print('segment nr : ', segment['index'])
+            print('segment label : ', label)
             try:
-                # specto = my_visu.show_spectogram(ecg1)
+                specto = my_visu.show_spectogram(ecg1)
+                # scalo = my_visu.show_scalogram(ecg1)
+                # atr = my_visu.show_attractor(ecg1)
+                if label=='AFIB':
+                    specto.savefig("MGR_DATASET/SPECTRO/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
+                            pad_inches=0, dpi=15)
+                    specto.close()
+                    GLOBAL_NR_AFIB += 1
+                else:
+                    specto.savefig("MGR_DATASET/SPECTRO/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
+                                   pad_inches=0, dpi=15)
+                    specto.close()
+                    GLOBAL_NR_nonAFIB += 1
+
+                scalo = my_visu.show_scalogram(ecg1)
+                # atr = my_visu.show_attractor(ecg1)
+                if label == 'AFIB':
+                    scalo.savefig("MGR_DATASET/SCALO/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
+                                   pad_inches=0, dpi=15)
+                    scalo.close()
+                    GLOBAL_NR_AFIB += 1
+                else:
+                    scalo.savefig("MGR_DATASET/SCALO/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB),
+                                   bbox_inches='tight',
+                                   pad_inches=0, dpi=15)
+                    scalo.close()
+                    GLOBAL_NR_nonAFIB += 1
+
                 # scalo = my_visu.show_scalogram(ecg1)
                 atr = my_visu.show_attractor(ecg1)
-                if label=='AFIB':
-                    atr.savefig("/Volumes/Backup Plus/MGR_DATASET/ATRACTOR/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
-                            pad_inches=0, dpi=15)
+                if label == 'AFIB':
+                    atr.savefig("MGR_DATASET/ATRACTOR/AFIB/{}.jpg".format(GLOBAL_NR_AFIB), bbox_inches='tight',
+                                  pad_inches=0, dpi=15)
                     atr.close()
                     GLOBAL_NR_AFIB += 1
                 else:
-                    atr.savefig("/Volumes/Backup Plus/MGR_DATASET/ATRACTOR/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB), bbox_inches='tight',
-                                   pad_inches=0, dpi=15)
+                    atr.savefig("MGR_DATASET/ATRACTOR/nonAFIB/{}.jpg".format(GLOBAL_NR_nonAFIB),
+                                  bbox_inches='tight',
+                                  pad_inches=0, dpi=15)
                     atr.close()
                     GLOBAL_NR_nonAFIB += 1
             except:
