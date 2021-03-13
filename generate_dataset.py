@@ -130,12 +130,12 @@ class TrainProbeGenerator:
             pass
 
 
-directory = os.fsencode('/media/bartek/Storage/DATASET/mit-bih-atrial-fibrillation-database-1.0.0/files')
+directory = os.fsencode('mit-bih/files')
 for file in tqdm(os.listdir(directory)):
     filename = os.fsdecode(file.decode())
     if filename.endswith(".dat"):
         print(filename)
-        signal_path = '/media/bartek/Storage/DATASET/mit-bih-atrial-fibrillation-database-1.0.0/files/'+filename[:-4]
+        signal_path = 'mit-bih/files/'+filename[:-4]
         my_visu = TrainProbeGenerator(signal_path)
         all_segments = my_visu.list_of_segments
         for segment in tqdm(all_segments):
