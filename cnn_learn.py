@@ -14,6 +14,8 @@ import time
 import tensorflow.keras as keras
 import datetime
 from sklearn.metrics import roc_curve, precision_recall_curve
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import plot_confusion_matrix
 
 DATADIR = 'MGR_DATASET/SPECTO/'
 CATEGORIES = ['nonAFIB', 'AFIB']
@@ -22,7 +24,7 @@ IMG_SIZE = 50
 training_data = []
 
 dense_layers = [2]#[0, 1, 2]
-layer_sizes = [128] #[32, 64, 128]
+layer_sizes = [64] #[32, 64, 128]
 conv_layers = [3]#[1, 2, 3]
 
 
@@ -101,6 +103,12 @@ METRICS = [
       keras.metrics.AUC(name='auc'),
 ]
 
+# CALLBACK
+class PredictionCallback(tf.keras.callbacks.Callback):
+  def on_epoch_end(self, epoch, logs={}):
+    y_pred = self.model.predict(self.validation_data[0])
+    print('prediction: {} at epoch: {}'.format(y_pred, epoch))
+
 from sklearn.model_selection import train_test_split
 frac_test_split = 0.1
 
@@ -116,7 +124,7 @@ X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
         for conv_layer in conv_layers:
-            NAME = 'ATRACTOR_AFDB_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
+            NAME = 'SPECTROGRAM_AFDB_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
@@ -148,32 +156,39 @@ for dense_layer in dense_layers:
             #                                                  save_weights_only=True,
             #                                                  verbose=1)
 
-            model.fit(X_train, y_train, batch_size=200, validation_split=0.1, epochs=20, callbacks=[tensorboard])
+            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=1, callbacks=[tensorboard])
 
 
 
-# def plot_diagnostic_curves(proba, y_true):
-#     import matplotlib.pyplot as plt
-#     fpr, tpr, _ = roc_curve(y_true, proba)
-#     fig, axarr = plt.subplots(1, 2)
-#     axarr[0].plot([0, 1], [0, 1], 'k--')
-#     axarr[0].plot(fpr, tpr)
-#     axarr[0].set_title('ROC curve')
-#     axarr[0].set_xlabel('FPR')
-#     axarr[0].set_ylabel('TPR')
-#     axarr[0].set_aspect('equal')
-#     axarr[0].grid(True)
-#
-#     precision, recall, pr_thresholds = precision_recall_curve(y_true, proba)
-#     axarr[1].plot([0, 1], [0, 1], 'k--')
-#     axarr[1].plot(recall, precision)
-#     axarr[1].set_title('Precision-Recall curve')
-#     axarr[1].set_xlabel('Recall')
-#     axarr[1].set_ylabel('Precision')
-#     axarr[1].set_aspect('equal')
-#     axarr[1].grid(True)
-#
-#
-# proba = model.predict(X_test)
-# plot_diagnostic_curves(proba, y_test)
-# plt.show()
+def plot_diagnostic_curves(proba, y_true):
+    import matplotlib.pyplot as plt
+    fpr, tpr, _ = roc_curve(y_true, proba)
+    fig, axarr = plt.subplots(1, 2)
+    axarr[0].plot([0, 1], [0, 1], 'k--')
+    axarr[0].plot(fpr, tpr)
+    axarr[0].set_title('ROC curve')
+    axarr[0].set_xlabel('FPR')
+    axarr[0].set_ylabel('TPR')
+    axarr[0].set_aspect('equal')
+    axarr[0].grid(True)
+
+    precision, recall, pr_thresholds = precision_recall_curve(y_true, proba)
+    axarr[1].plot([0, 1], [0, 1], 'k--')
+    axarr[1].plot(recall, precision)
+    axarr[1].set_title('Precision-Recall curve')
+    axarr[1].set_xlabel('Recall')
+    axarr[1].set_ylabel('Precision')
+    axarr[1].set_aspect('equal')
+    axarr[1].grid(True)
+
+
+predictions = model.predict(X_test)
+plot_diagnostic_curves(predictions, y_test)
+plt.savefig(f'figs/SPECTROGRAM/diagnostics_curves.png')
+
+scores = cross_val_score(model, inputs, targets, cv=5)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, normalize='true')
+plt.savefig(f'figs/SPECTROGRAM/conf_matrix.png')
+
