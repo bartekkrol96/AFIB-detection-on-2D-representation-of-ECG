@@ -18,15 +18,17 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+feature = 'SPECTROGRAM'
+
 DATADIR = 'MGR_DATASET/SPECTO/'
 CATEGORIES = ['nonAFIB', 'AFIB']
 IMG_SIZE = 50
 
 training_data = []
 
-dense_layers = [2]#[0, 1, 2]
-layer_sizes = [64] #[32, 64, 128]
-conv_layers = [3]#[1, 2, 3]
+dense_layers = [0, 1, 2]#[0, 1, 2]
+layer_sizes = [32, 64, 128] #[32, 64, 128]
+conv_layers = [1, 2, 3]#[1, 2, 3]
 
 
 def create_training_data():
@@ -126,7 +128,7 @@ print('positive in test : ', len(np.where(y_test==1)[0]))
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
         for conv_layer in conv_layers:
-            NAME = 'SPECTROGRAM_AFDB_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
+            NAME = '{}_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(feature, conv_layer, layer_size, dense_layer, str(time.time()))
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
@@ -158,7 +160,7 @@ for dense_layer in dense_layers:
             #                                                  save_weights_only=True,
             #                                                  verbose=1)
 
-            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=5, callbacks=[tensorboard])
+            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
 
 
 def plot_diagnostic_curves(proba, y_true):
@@ -185,7 +187,7 @@ def plot_diagnostic_curves(proba, y_true):
 
 predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
-plt.savefig(f'figs/SPECTROGRAM/diagnostics_curves.png')
+plt.savefig(f'figs/{feature}/diagnostics_curves.png')
 
 
 def plot_cm(labels, predictions, p=0.5):
@@ -209,4 +211,4 @@ for name, value in zip(model.metrics_names, baseline_results):
 print()
 
 plot_cm(y_test, predictions)
-plt.savefig(f'figs/SPECTROGRAM/conf_matrix_on_test_set.png')
+plt.savefig(f'figs/{feature}/conf_matrix_on_test_set.png')
