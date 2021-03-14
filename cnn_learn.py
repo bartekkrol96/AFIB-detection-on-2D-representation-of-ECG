@@ -109,7 +109,6 @@ X_train, X_test, y_train, y_test = train_test_split(inputs, targets, test_size=f
 np.save('./data.npy', (X_train, X_test, y_train, y_test))
 X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
 
-output_bias = None
 
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
@@ -118,7 +117,6 @@ for dense_layer in dense_layers:
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
-            output_bias = tf.keras.initializers.Constant(output_bias)
             model = Sequential()
             model.add(Conv2D(layer_size, (3, 3), input_shape=X_train.shape[1:]))
             model.add(Activation("relu"))
