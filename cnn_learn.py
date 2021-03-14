@@ -15,7 +15,8 @@ import tensorflow.keras as keras
 import datetime
 from sklearn.metrics import roc_curve, precision_recall_curve
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 DATADIR = 'MGR_DATASET/SPECTO/'
 CATEGORIES = ['nonAFIB', 'AFIB']
@@ -160,7 +161,6 @@ for dense_layer in dense_layers:
             model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=1, callbacks=[tensorboard])
 
 
-
 def plot_diagnostic_curves(proba, y_true):
     import matplotlib.pyplot as plt
     fpr, tpr, _ = roc_curve(y_true, proba)
@@ -187,9 +187,26 @@ predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
 plt.savefig(f'figs/SPECTROGRAM/diagnostics_curves.png')
 
-# scores = cross_val_score(model, inputs, targets, cv=5, scoring="accuracy")
-# print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
-plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, normalize='true')
-plt.savefig(f'figs/SPECTROGRAM/conf_matrix.png')
+def plot_cm(labels, predictions, p=0.5):
+    cm = confusion_matrix(labels, predictions > p, normalize='true')
+    plt.figure(figsize=(5,5))
+    sns.heatmap(cm, annot=True, fmt=".2f")
+    plt.title('Confusion matrix @{:.2f}'.format(p))
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
 
+    print('Legitimate Transactions Detected (True Negatives): ', cm[0][0])
+    print('Legitimate Transactions Incorrectly Detected (False Positives): ', cm[0][1])
+    print('Fraudulent Transactions Missed (False Negatives): ', cm[1][0])
+    print('Fraudulent Transactions Detected (True Positives): ', cm[1][1])
+    print('Total Fraudulent Transactions: ', np.sum(cm[1]))
+
+
+baseline_results = model.evaluate(X_test, y_test, batch_size=1000, verbose=0)
+for name, value in zip(model.metrics_names, baseline_results):
+  print(name, ': ', value)
+print()
+
+plot_cm(y_test, predictions)
+plt.savefig(f'figs/SPECTROGRAM/conf_matrix_on_test_set.png')
