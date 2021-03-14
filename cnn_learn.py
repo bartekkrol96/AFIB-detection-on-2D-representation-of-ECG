@@ -119,7 +119,8 @@ X_train, X_test, y_train, y_test = train_test_split(inputs, targets, test_size=f
 # Save and load temporarily
 np.save('./data.npy', (X_train, X_test, y_train, y_test))
 X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
-
+print()
+print('positive in test : ', len(np.where(y_test==1)[0]))
 
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
@@ -186,8 +187,8 @@ predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
 plt.savefig(f'figs/SPECTROGRAM/diagnostics_curves.png')
 
-scores = cross_val_score(model, inputs, targets, cv=5, scoring="accuracy")
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+# scores = cross_val_score(model, inputs, targets, cv=5, scoring="accuracy")
+# print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, normalize='true')
 plt.savefig(f'figs/SPECTROGRAM/conf_matrix.png')
