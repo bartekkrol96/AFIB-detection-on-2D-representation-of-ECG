@@ -158,7 +158,7 @@ for dense_layer in dense_layers:
             #                                                  save_weights_only=True,
             #                                                  verbose=1)
 
-            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=1, callbacks=[tensorboard])
+            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=5, callbacks=[tensorboard])
 
 
 def plot_diagnostic_curves(proba, y_true):
