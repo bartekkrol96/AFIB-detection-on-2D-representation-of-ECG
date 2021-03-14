@@ -53,12 +53,14 @@ y = []
 classes = np.array([training_data[i][1] for i in range(len(training_data))])
 pos = len(np.where(classes==1)[0])
 neg = len(np.where(classes==0)[0])
+print('nr of positives : ', pos)
+print('nr of negatives : ', neg)
 total = pos+neg
 
 counter = 0
 for features, label in training_data:
     if label==0:
-        if counter<=pos:
+        if counter<pos:
             X.append(features)
             y.append(label)
             counter+=1
@@ -85,7 +87,8 @@ y = pickle.load(open("y.pickle", "rb"))
 X = X/255.0
 y = np.array(y)
 
-
+print('nr of positives in balanced : ', len(np.where(y==1)[0]))
+print('nr of negatives in balanced : ', len(np.where(y==0)[0]))
 
 METRICS = [
       keras.metrics.TruePositives(name='tp'),
