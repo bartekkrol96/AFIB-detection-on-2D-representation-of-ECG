@@ -186,7 +186,7 @@ predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
 plt.savefig(f'figs/SPECTROGRAM/diagnostics_curves.png')
 
-scores = cross_val_score(model, inputs, targets, cv=5)
+scores = cross_val_score(model, inputs, targets, cv=5, scoring="accuracy")
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 plot_confusion_matrix(model, X_test, y_test, cmap=plt.cm.Blues, normalize='true')
