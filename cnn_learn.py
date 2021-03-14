@@ -50,24 +50,24 @@ X = []
 y = []
 
 # TODO BALANCED
-# classes = np.array([training_data[i][1] for i in range(len(training_data))])
-# pos = len(np.where(classes==1)[0])
-# neg = len(np.where(classes==0)[0])
-# total = pos+neg
-#
-# counter = 0
-# for features, label in training_data:
-#     if label==0:
-#         if counter<=pos:
-#             X.append(features)
-#             y.append(label)
-#             counter+=1
-#     else:
-#         X.append(features)
-#         y.append(label)
+classes = np.array([training_data[i][1] for i in range(len(training_data))])
+pos = len(np.where(classes==1)[0])
+neg = len(np.where(classes==0)[0])
+total = pos+neg
+
+counter = 0
 for features, label in training_data:
-    X.append(features)
-    y.append(label)
+    if label==0:
+        if counter<=pos:
+            X.append(features)
+            y.append(label)
+            counter+=1
+    else:
+        X.append(features)
+        y.append(label)
+# for features, label in training_data:
+#     X.append(features)
+#     y.append(label)
 
 X = np.array(X).reshape(-1, IMG_SIZE, IMG_SIZE, 1)
 
@@ -114,7 +114,7 @@ output_bias = None
 for dense_layer in dense_layers:
     for layer_size in layer_sizes:
         for conv_layer in conv_layers:
-            NAME = 'ATRACTOR_AFDB_FINAL_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
+            NAME = 'ATRACTOR_AFDB_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(conv_layer, layer_size, dense_layer, str(time.time()))
             print(NAME)
             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
