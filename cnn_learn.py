@@ -125,42 +125,76 @@ X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
 print()
 print('positive in test : ', len(np.where(y_test==1)[0]))
 
-for dense_layer in dense_layers:
-    for layer_size in layer_sizes:
-        for conv_layer in conv_layers:
-            NAME = '{}_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(feature, conv_layer, layer_size, dense_layer, str(time.time()))
-            print(NAME)
-            tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+# for dense_layer in dense_layers:
+#     for layer_size in layer_sizes:
+#         for conv_layer in conv_layers:
+#             NAME = '{}_BALANCED_conv-{}-nodes-{}-dense-{}-data-{}'.format(feature, conv_layer, layer_size, dense_layer, str(time.time()))
+#             print(NAME)
+#             tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
+#
+#             model = Sequential()
+#             model.add(Conv2D(layer_size, (3, 3), input_shape=X_train.shape[1:]))
+#             model.add(Activation("relu"))
+#             model.add(MaxPooling2D(pool_size=(2,2)))
+#
+#             for i in range(conv_layer-1):
+#                 model.add(Conv2D(layer_size, (3, 3)))
+#                 model.add(Activation("relu"))
+#                 model.add(MaxPooling2D(pool_size=(2,2)))
+#
+#             model.add(Flatten())
+#             for j in range(dense_layer):
+#                 model.add(Dense(layer_size))
+#                 model.add(Activation("relu"))
+#
+#             model.add(Dense(1))
+#             model.add(Activation('sigmoid'))
+#
+#             model.compile(loss='binary_crossentropy',
+#                           optimizer="adam",
+#                           metrics=METRICS)
+#             model.summary()
+#             # checkpoint_path = "training_1/cp.ckpt"
+#             # checkpoint_dir = os.path.dirname(checkpoint_path)
+#             # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+#             #                                                  save_weights_only=True,
+#             #                                                  verbose=1)
+#
+#             model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
 
-            model = Sequential()
-            model.add(Conv2D(layer_size, (3, 3), input_shape=X_train.shape[1:]))
-            model.add(Activation("relu"))
-            model.add(MaxPooling2D(pool_size=(2,2)))
+conv_layer = 3
+layer_size = 128
+dense_layer = 2
 
-            for i in range(conv_layer-1):
-                model.add(Conv2D(layer_size, (3, 3)))
-                model.add(Activation("relu"))
-                model.add(MaxPooling2D(pool_size=(2,2)))
 
-            model.add(Flatten())
-            for j in range(dense_layer):
-                model.add(Dense(layer_size))
-                model.add(Activation("relu"))
+def create_model():
+    NAME = '{}_BALANCED_FINAL-data-{}'.format(feature, str(time.time()))
+    print(NAME)
+    tensorboard = TensorBoard(log_dir='logs/{}'.format(NAME))
 
-            model.add(Dense(1))
-            model.add(Activation('sigmoid'))
+    model = Sequential()
+    model.add(Conv2D(layer_size, (3, 3), input_shape=X_train.shape[1:]))
+    model.add(Activation("relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
 
-            model.compile(loss='binary_crossentropy',
-                          optimizer="adam",
-                          metrics=METRICS)
-            model.summary()
-            # checkpoint_path = "training_1/cp.ckpt"
-            # checkpoint_dir = os.path.dirname(checkpoint_path)
-            # cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-            #                                                  save_weights_only=True,
-            #                                                  verbose=1)
+    for i in range(conv_layer - 1):
+        model.add(Conv2D(layer_size, (3, 3)))
+        model.add(Activation("relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
 
-            model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
+    model.add(Flatten())
+    for j in range(dense_layer):
+        model.add(Dense(layer_size))
+        model.add(Activation("relu"))
+
+    model.add(Dense(1))
+    model.add(Activation('sigmoid'))
+
+    model.compile(loss='binary_crossentropy',
+                  optimizer="adam",
+                  metrics=METRICS)
+    model.summary()
+    return model, tensorboard
 
 
 def plot_diagnostic_curves(proba, y_true):
@@ -184,6 +218,30 @@ def plot_diagnostic_curves(proba, y_true):
     axarr[1].set_aspect('equal')
     axarr[1].grid(True)
 
+
+from sklearn.model_selection import KFold
+
+n_split = 10
+
+sums = []
+for train_index, test_index in KFold(n_split).split(X):
+    x_train, x_test = X[train_index], X[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+
+    model, tensorboard = create_model()
+    model.fit(x_train, y_train, epochs=30, batch_size=1000, callbacks=[tensorboard])
+
+    print('Model metrics : ', model.metrics_names)
+    evaluation = model.evaluate(x_test, y_test)
+    print('Model evaluation : ', evaluation)
+    sums.append(evaluation)
+
+averages = np.mean(sums, axis=0)
+print('Model metrics : ', model.metrics_names)
+print('Cross validations averages : ', averages)
+
+model, tensorboard = create_model()
+model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=30, callbacks=[tensorboard])
 
 predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
