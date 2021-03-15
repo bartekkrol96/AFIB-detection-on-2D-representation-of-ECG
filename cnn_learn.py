@@ -18,6 +18,13 @@ from sklearn.model_selection import cross_val_score
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
+# from tensorflow.compat.v1 import ConfigProto
+# from tensorflow.compat.v1 import InteractiveSession
+#
+# config = ConfigProto()
+# config.gpu_options.allow_growth = True
+# session = InteractiveSession(config=config)
+
 feature = 'SPECTROGRAM'
 
 DATADIR = 'MGR_DATASET/SPECTO/'
@@ -121,9 +128,7 @@ X_train, X_test, y_train, y_test = train_test_split(inputs, targets, test_size=f
 
 # Save and load temporarily
 np.save('./data.npy', (X_train, X_test, y_train, y_test))
-X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
-print()
-print('positive in test : ', len(np.where(y_test==1)[0]))
+
 
 # for dense_layer in dense_layers:
 #     for layer_size in layer_sizes:
@@ -240,6 +245,9 @@ averages = np.mean(sums, axis=0)
 print('Model metrics : ', model.metrics_names)
 print('Cross validations averages : ', averages)
 
+X_train, X_test, y_train, y_test = np.load('./data.npy', allow_pickle=True)
+print()
+print('positive in test : ', len(np.where(y_test==1)[0]))
 model, tensorboard = create_model()
 model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
 
