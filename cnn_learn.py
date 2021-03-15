@@ -163,7 +163,7 @@ print('positive in test : ', len(np.where(y_test==1)[0]))
 #             model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
 
 conv_layer = 3
-layer_size = 128
+layer_size = 64
 dense_layer = 2
 
 
@@ -221,7 +221,7 @@ def plot_diagnostic_curves(proba, y_true):
 
 from sklearn.model_selection import KFold
 
-n_split = 10
+n_split = 5
 
 sums = []
 for train_index, test_index in KFold(n_split).split(X):
@@ -229,7 +229,7 @@ for train_index, test_index in KFold(n_split).split(X):
     y_train, y_test = y[train_index], y[test_index]
 
     model, tensorboard = create_model()
-    model.fit(x_train, y_train, epochs=30, batch_size=1000, callbacks=[tensorboard])
+    model.fit(x_train, y_train, epochs=20, batch_size=1000, callbacks=[tensorboard])
 
     print('Model metrics : ', model.metrics_names)
     evaluation = model.evaluate(x_test, y_test)
@@ -241,7 +241,7 @@ print('Model metrics : ', model.metrics_names)
 print('Cross validations averages : ', averages)
 
 model, tensorboard = create_model()
-model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=30, callbacks=[tensorboard])
+model.fit(X_train, y_train, batch_size=1000, validation_split=0.1, epochs=20, callbacks=[tensorboard])
 
 predictions = model.predict(X_test)
 plot_diagnostic_curves(predictions, y_test)
